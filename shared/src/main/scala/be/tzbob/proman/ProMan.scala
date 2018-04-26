@@ -1,13 +1,18 @@
 package be.tzbob.proman
 
 import be.tzbob.examples.ExampleMain
-import be.tzbob.proman.db.DB
 import cats.instances.all._
 import cats.syntax.all._
 import mtfrp.core.UI.HTML
-import mtfrp.core.{ClientDBehavior, ClientEvent}
+import mtfrp.core.{
+  AppBehavior,
+  ClientDBehavior,
+  ClientEvent,
+  SessionBehavior,
+  SessionEvent
+}
 
-object ProMan extends ExampleMain {
+object ProMan extends PageMain {
   val indexPage = new IndexPage
   val currentProject = indexPage.selectedProject.fold(Option.empty[Project]) {
     (_, p) =>
@@ -24,26 +29,24 @@ object ProMan extends ExampleMain {
     indexPages.unionRight(projectPages).hold(indexPage).toDBehavior
   }
 
-  val pages: Vector[Page] = Vector(indexPage, projectPage)
-  val sequenced: ClientDBehavior[Map[Page, HTML]] = {
+  val pages = Vector(indexPage, projectPage)
+}
+
+trait PageMain extends ExampleMain {
+  val selectedPage: ClientDBehavior[Page]
+  val pages: Vector[Page]
+
+  lazy val sequenced: ClientDBehavior[Map[Page, HTML]] = {
     val interfaces = pages.map(p => p.scene.interface.map(p -> _))
     interfaces.sequence.map(_.toMap)
   }
 
-//  def ui: ClientDBehavior[HTML] = (selectedPage, sequenced).mapN {
-//    (page, interfaces) =>
-//      interfaces(page)
-//  }
-//
-//  def ui = (indexPage.scene.interface, projectPage.scene.interface).mapN {
-//    (i, p) =>
-//      println(i)
-//      i
-//  }
+  def ui: ClientDBehavior[HTML] = (selectedPage, sequenced).mapN {
+    (page, interfaces) =>
+      interfaces(page)
+  }
 
-  def ui =
-    indexPage.scene.interface
-      .map { i =>
-        i
-      }
+  def snapshotServer[A, B, C](request: ClientEvent[A],
+                                 state: SessionBehavior[B])(
+      f: (A, B) => C): (ClientEvent[C], SessionEvent[A]) = ???
 }

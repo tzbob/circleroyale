@@ -17,9 +17,13 @@ class IndexPage extends Page with LazyLogging {
   private[this] val submitPress      = ClientEvent.source[Unit]
   private[this] val selectedProject0 = ClientEvent.source[Project]
 
-  val selectedProject: ClientEvent[Project] = selectedProject0
+  val selectedProject: ClientEvent[Project] =
+    (selectedProject0: ClientEvent[Project]).map { x =>
+      logger.info(s"Selected project: $x")
+      x
+    }
 
-  val firstConnection =
+  val firstConnection: AppEvent[Int] =
     AppEvent.clientChanges
       .fold(0) { (old, _) =>
         old + 1
@@ -27,20 +31,22 @@ class IndexPage extends Page with LazyLogging {
       .changes
       .dropIf(_ > 1)
 
-  val queryInitialProjects: AppEvent[IO[Vector[Project]]] = firstConnection.as {
-    @server val io = {
-      import doobie.implicits._
-      for {
-        ps <- ProjectDAO.findAll.transact(DB.transactor)
-      } yield {
-        logger.info(s"Found initial projects: $ps")
-        ps
+  val queryInitialProjects: AppEvent[IO[Vector[Project]]] = firstConnection
+    .map { _ =>
+      logger.info(s"Looking for initial projects")
+      @server val io = {
+        import doobie.implicits._
+        for {
+          ps <- ProjectDAO.findAll.transact(DB.transactor)
+        } yield {
+          logger.info(s"Found initial projects: $ps")
+          ps
+        }
       }
+      io
     }
-    io
-  }
 
-  val initialProjects = AppAsync.execute(queryInitialProjects)
+  val initialProjects: AppEvent[Vector[Project]] = AppAsync.execute(queryInitialProjects)
 
   val projectSubmit: ClientEvent[Project] =
     projectName.snapshotWith(submitPress) { (name, _) =>
@@ -70,8 +76,7 @@ class IndexPage extends Page with LazyLogging {
   val persistedProjects =
     initialProjects
       .map { p =>
-        logger.info(s"found $p")
-
+        logger.info(s"Results for initialProjects $p")
         p
       }
       .unionLeft(persistedProject.map(Vector(_)))

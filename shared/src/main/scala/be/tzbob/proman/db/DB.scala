@@ -9,8 +9,8 @@ object DB {
     import scala.concurrent.duration._
 
     val initTables = for {
-      _ <- EntryDAO.createIfNotExistsTable
       _ <- ProjectDAO.createIfNotExistsTable
+      _ <- EntryDAO.createIfNotExistsTable
     } yield {}
 
     initTables.transact(DB.transactor).unsafeRunTimed(5.seconds)

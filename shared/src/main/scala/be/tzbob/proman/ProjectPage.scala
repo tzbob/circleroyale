@@ -14,7 +14,7 @@ class ProjectPage(project: ClientDBehavior[Option[Project]]) extends Page {
 
   val body = Ap.map(project) { p: Project =>
     div(p.entries.map(_.interface),
-        button(UI.listen(onclick, backToIndex0)(_ => ())))
+        button(UI.listen(onclick, backToIndex0)(_ => ()), "Back to Index"))
   }
 
   val warnings: ClientDBehavior[String] = ClientDBehavior.constant("wip")
