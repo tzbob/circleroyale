@@ -30,13 +30,14 @@ lazy val example = crossProject
     addCompilerPlugin(
       "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     libraryDependencies ++= Seq(
-      "be.tzbob" %%% "kooi" % "0.3.9-SNAPSHOT"
+      "be.tzbob" %%% "kooi" % "0.3.9-SNAPSHOT",
+      "org.scalatest" %%% "scalatest" % "3.0.5" % "test"
     ),
     useYarn := true,
     scalaJSUseMainModuleInitializer := true,
     emitSourceMaps := true,
     webpackBundlingMode := BundlingMode.LibraryOnly(),
-    mainClass in Compile := Some("be.tzbob.proman.ProMan")
+    mainClass in Compile := Some("be.tzbob.circleroyale.CircleRoyale")
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
