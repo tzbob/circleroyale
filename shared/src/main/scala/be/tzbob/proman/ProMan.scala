@@ -4,13 +4,7 @@ import be.tzbob.examples.ExampleMain
 import cats.instances.all._
 import cats.syntax.all._
 import mtfrp.core.UI.HTML
-import mtfrp.core.{
-  AppBehavior,
-  ClientDBehavior,
-  ClientEvent,
-  SessionBehavior,
-  SessionEvent
-}
+import mtfrp.core.{ClientDBehavior, ClientEvent}
 
 object ProMan extends PageMain {
   val indexPage = new IndexPage
@@ -41,12 +35,8 @@ trait PageMain extends ExampleMain {
     interfaces.sequence.map(_.toMap)
   }
 
-  def ui: ClientDBehavior[HTML] = (selectedPage, sequenced).mapN {
-    (page, interfaces) =>
+  def ui: ClientDBehavior[HTML] =
+    noWebSockets((selectedPage, sequenced).mapN { (page, interfaces) =>
       interfaces(page)
-  }
-
-  def snapshotServer[A, B, C](request: ClientEvent[A],
-                                 state: SessionBehavior[B])(
-      f: (A, B) => C): (ClientEvent[C], SessionEvent[A]) = ???
+    })
 }

@@ -23,16 +23,8 @@ class IndexPage extends Page with LazyLogging {
       x
     }
 
-  val firstConnection: AppEvent[Int] =
-    AppEvent.clientChanges
-      .fold(0) { (old, _) =>
-        old + 1
-      }
-      .changes
-      .dropIf(_ > 1)
-
-  val queryInitialProjects: AppEvent[IO[Vector[Project]]] = firstConnection
-    .map { _ =>
+  val queryInitialProjects: AppEvent[IO[Vector[Project]]] = AppEvent.start.map {
+    _ =>
       logger.info(s"Looking for initial projects")
       @server val io = {
         import doobie.implicits._
@@ -44,9 +36,10 @@ class IndexPage extends Page with LazyLogging {
         }
       }
       io
-    }
+  }
 
-  val initialProjects: AppEvent[Vector[Project]] = AppAsync.execute(queryInitialProjects)
+  val initialProjects: AppEvent[Vector[Project]] =
+    AppAsync.execute(queryInitialProjects)
 
   val projectSubmit: ClientEvent[Project] =
     projectName.snapshotWith(submitPress) { (name, _) =>
@@ -73,7 +66,7 @@ class IndexPage extends Page with LazyLogging {
 
   val persistedProject: AppEvent[Project] = AppAsync.execute(persistProject)
 
-  val persistedProjects =
+  val persistedProjects: AppEvent[Vector[Project]] =
     initialProjects
       .map { p =>
         logger.info(s"Results for initialProjects $p")
@@ -81,10 +74,16 @@ class IndexPage extends Page with LazyLogging {
       }
       .unionLeft(persistedProject.map(Vector(_)))
 
-  val projects = persistedProjects.fold(Seq.empty[Project]) { _ ++ _ }
+  val projects: AppIBehavior[Seq[Project], Vector[Project]] =
+    persistedProjects.fold(Seq.empty[Project]) { _ ++ _ }
+
+  val broadcastedProjects: ClientDBehavior[Seq[Project]] = {
+    val sessionProjects = AppIBehavior.toSession(projects)
+    AppIBehavior.broadcast(projects).toDBehavior
+  }
 
   val interface: ClientDBehavior[HTML] =
-    AppIBehavior.broadcast(projects).toDBehavior.map { ps: Seq[Project] =>
+    broadcastedProjects.map { ps: Seq[Project] =>
       val rawInput = input(id := "projectName", `type` := "text", value := "")
       val boundInput = UI.read(rawInput)(projectName, el => {
         el.value.asInstanceOf[String]

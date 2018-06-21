@@ -30,7 +30,7 @@ lazy val example = crossProject
     addCompilerPlugin(
       "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     libraryDependencies ++= Seq(
-      "be.tzbob" %%% "kooi" % "0.3.8-SNAPSHOT"
+      "be.tzbob" %%% "kooi" % "0.3.9-SNAPSHOT"
     ),
     useYarn := true,
     scalaJSUseMainModuleInitializer := true,
