@@ -5,18 +5,19 @@ import mtfrp.core.{Client, UI}
 
 import scala.util.Random
 
-@JsonCodec case class Player(position: Vec2D,
-                             radius: Int,
-                             color: String,
-                             attacking: Boolean,
-                             weapon: Weapon) {
+@JsonCodec
+case class Player(position: Vec2D,
+                  radius: Int,
+                  color: String,
+                  attacking: Boolean,
+                  weapon: Weapon,
+                  rotation: Vec2D) {
   lazy val attack  = copy(attacking = true)
   lazy val passive = copy(attacking = false)
 
-  val boundingCircle =
-    if (attacking) weapon.boundingCircle(position) else Circle(position, radius)
-
-  def move(vec2D: Vec2D): Player = copy(position = position.move(vec2D))
+  def rotateTo(rotation: Vec2D): Player = copy(rotation = rotation.normalize)
+  def move(vec2D: Vec2D): Player        = copy(position = position.move(vec2D))
+  def step(steps: Long): Player         = move(rotation * steps)
 
   def clamp(min: Vec2D, max: Vec2D): Player = {
     val offset = (Vec2D.right + Vec2D.up) * radius
@@ -31,39 +32,40 @@ import scala.util.Random
   lazy val svg: UI.HTML = {
     import UI.html.implicits._
     import UI.html.svgTags._
-    import UI.html.svgAttrs._
+    import UI.html.{svgAttrs => a}
 
-    if (attacking)
-      g(
-        weapon.svg(cx := position.x, cy := position.y),
-        circle(cx := position.x,
-               cy := position.y,
-               r := this.radius,
-               fill := this.color)
-      )
-    else
-      circle(cx := position.x,
-             cy := position.y,
-             r := this.radius,
-             fill := this.color)
+    g(
+      if (attacking)
+        Seq(
+          weapon.svg(a.cx := position.x,
+                     a.cy := position.y))
+//                     a.transform := s"rotate(${rotation.angle})"))
+      else Seq.empty[UI.HTML],
+      circle(a.cx := position.x,
+             a.cy := position.y,
+             a.r := this.radius,
+             a.fill := this.color)
+    )
   }
 
-  def intersects(other: Player): Boolean =
-    boundingCircle.intersects(other.boundingCircle)
+  def hits(other: Player, orientation: Vec2D): Boolean =
+    if (attacking) weapon.hits(position, orientation, other)
+    else false
 }
 
 object Player {
-  val size = 20
-  val color = {
-    Random.setSeed(System.currentTimeMillis())
-    val r = Random.nextInt(200)
-    val g = Random.nextInt(200)
-    val b = Random.nextInt(200)
-    s"rgb($r,$g,$b)"
-  }
+  val size  = 20
+  val color = s"rgb(255, 224, 189)"
 
   def randomDefault(width: Int, height: Int): Player = {
+    import scala.concurrent.duration._
     val pos = Vec2D.random(width, height)
-    Player(pos, size, color, false, Weapon.Wipe(40))
+    Player(pos,
+           size,
+           color,
+           false,
+//           Weapon.Laser(40, 2.seconds, 3.seconds),
+           Weapon.Wipe(40, 2.seconds, 3.seconds),
+           Vec2D.zero)
   }
 }

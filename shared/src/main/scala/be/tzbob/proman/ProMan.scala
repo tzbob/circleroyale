@@ -6,25 +6,25 @@ import cats.syntax.all._
 import mtfrp.core.UI.HTML
 import mtfrp.core.{ClientDBehavior, ClientEvent}
 
-object ProMan extends PageMain {
-  val indexPage = new IndexPage
-  val currentProject = indexPage.selectedProject.fold(Option.empty[Project]) {
-    (_, p) =>
-      Option(p)
-  }
-
-  val projectPage = new ProjectPage(currentProject.toDBehavior)
-
-  val selectedPage: ClientDBehavior[Page] = {
-    val indexPages: ClientEvent[Page] = projectPage.backToIndex.as(indexPage)
-    val projectPages: ClientEvent[Page] =
-      indexPage.selectedProject.as(projectPage)
-
-    indexPages.unionRight(projectPages).hold(indexPage).toDBehavior
-  }
-
-  val pages = Vector(indexPage, projectPage)
-}
+//object ProMan extends PageMain {
+//  val indexPage = new IndexPage
+//  val currentProject = indexPage.selectedProject.fold(Option.empty[Project]) {
+//    (_, p) =>
+//      Option(p)
+//  }
+//
+//  val projectPage = new ProjectPage(currentProject.toDBehavior)
+//
+//  val selectedPage: ClientDBehavior[Page] = {
+//    val indexPages: ClientEvent[Page] = projectPage.backToIndex.as(indexPage)
+//    val projectPages: ClientEvent[Page] =
+//      indexPage.selectedProject.as(projectPage)
+//
+//    indexPages.unionRight(projectPages).hold(indexPage).toDBehavior
+//  }
+//
+//  val pages = Vector(indexPage, projectPage)
+//}
 
 trait PageMain extends ExampleMain {
   val selectedPage: ClientDBehavior[Page]

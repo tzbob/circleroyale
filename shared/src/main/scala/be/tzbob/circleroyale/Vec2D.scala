@@ -22,10 +22,17 @@ import scala.util.Random
   }
 
   val magnitude: Double = Math.sqrt(x * x + y * y)
+
+  /**
+  *  Angle in degrees
+    */
+  val angle: Double     = Math.toDegrees(Math.atan(y / x))
+
   lazy val normalize = {
     if (magnitude == 0) Vec2D.zero
     else this * (1 / magnitude)
   }
+
 }
 
 object Vec2D {
