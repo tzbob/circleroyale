@@ -1,15 +1,13 @@
 package be.tzbob.circleroyale
 
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
 import mtfrp.core._
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Promise
 import scala.concurrent.duration.FiniteDuration
 
 object Time {
-  implicit private[this] val timer = IO.timer(ExecutionContext.global)
-
   type Time = Long
 
   trait HasTime[T <: Tier] {
@@ -39,7 +37,14 @@ object Time {
 
     import tier.Event._
     tier.Async.execute(ev.map { e =>
-      IO.sleep(dur).as(e)
+      IO {
+        val p     = Promise[Unit]()
+        val timer = new java.util.Timer()
+        timer.schedule(new java.util.TimerTask {
+          def run() = p.success(())
+        }, dur.toMillis)
+        p.future
+      }.as(e)
     })
   }
 
