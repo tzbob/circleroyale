@@ -1,7 +1,6 @@
 package be.tzbob.examples
 
 import mtfrp.core._
-import slogging._
 
 trait ExampleMain extends GavialApp {
   val host = "localhost"

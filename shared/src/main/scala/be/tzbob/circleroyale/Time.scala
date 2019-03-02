@@ -52,21 +52,6 @@ object Time {
         val df = mkDelay[T, A]
         df(ev, duration)
       }
-//      def timed[A](ev: T#Event[A]): T#Event[(A, Time)] = {
-//        val snappedTime: T#Event[(Time, A)] =
-//          tier.Behavior.mtfrpBehaviorInstances.snapshotWith(now, ev) { (_, _) }
-//
-//        import tier.Event._
-//
-//        snappedTime
-//          .fold(null.asInstanceOf[A] -> 0L -> 0L) {
-//            case (((_, _), tfull), (t, a)) =>
-//              ((a, (t - tfull)), t)
-//          }
-//          .changes
-//          .asInstanceOf[T#Event[((A, Time), Time)]]
-//          .map { case (r, _) => r }
-//      }
     }
 
   def time[T <: Tier: HasTime]: HasTime[T] = implicitly[HasTime[T]]

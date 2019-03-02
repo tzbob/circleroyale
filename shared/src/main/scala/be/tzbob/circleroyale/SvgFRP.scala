@@ -34,8 +34,6 @@ class SvgFRP(name: String, totalWidth: Int, totalHeight: Int)
       import mtfrp.core.UI.html.svgTags
       import mtfrp.core.UI.html.svgAttrs
 
-//      logger.debug(s"camera used: ${cam.viewboxText}")
-
       val svgField = svgTags.svg(
         xmlns := "http://www.w3.org/2000/svg",
         svgAttrs.viewBox := cam.viewboxText,

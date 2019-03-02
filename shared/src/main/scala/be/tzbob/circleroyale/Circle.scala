@@ -10,13 +10,4 @@ object Shape {
     def intersectsWithCircle(other: Circle): Boolean =
       (position - other.position).magnitude <= (radius + other.radius)
   }
-
-  case class Rectangle(corner: Vec2D,
-                       width: Double,
-                       height: Double,
-                       orientation: Vec2D)
-      extends Shape {
-    val position: Vec2D                              = corner
-    def intersectsWithCircle(other: Circle): Boolean = ???
-  }
 }
