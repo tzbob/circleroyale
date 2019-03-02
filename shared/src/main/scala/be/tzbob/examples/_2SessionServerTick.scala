@@ -39,7 +39,7 @@ object _2SessionServerTick extends ExampleMain {
     ClientEvent.toSession(throttledInput)
 
   val playerInput: SessionEvent[(Vec2D, Boolean)] =
-    FrpUtil.throttle(serverInput, sessionInterval)
+    serverInput.hold((Vec2D.zero, false)).sampledBy(sessionInterval)
 
   val sessionPlayer: SessionDBehavior[Player] =
     playerInput
@@ -72,4 +72,3 @@ object _2SessionServerTick extends ExampleMain {
   }
 
 }
-
