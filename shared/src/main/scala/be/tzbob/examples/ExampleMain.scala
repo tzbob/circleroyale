@@ -4,7 +4,6 @@ import mtfrp.core._
 import slogging._
 
 trait ExampleMain extends GavialApp {
-
   val host = "localhost"
   val port = 8080
 

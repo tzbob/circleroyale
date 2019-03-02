@@ -11,7 +11,6 @@ case class Player(position: Vec2D,
                   rotation: Vec2D,
                   dead: Boolean = false) {
   def setDead(d: Boolean): Player = copy(dead = d)
-//  def setName(nm: Option[String]): Player = copy(name = nm)
 
   lazy val attack  = copy(attacking = true)
   lazy val passive = copy(attacking = false)
@@ -79,7 +78,6 @@ object Player {
            size,
            color,
            false,
-//           Weapon.Laser(40, 2.seconds, 3.seconds),
            Weapon.Wipe(40, 2.seconds, 3.seconds),
            Vec2D.zero)
   }

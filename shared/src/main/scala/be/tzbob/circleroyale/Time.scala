@@ -27,17 +27,12 @@ object Time {
         val df = mkDelay[SessionTier, A]
         df(ev, duration)
       }
-//      def timed[A](ev: SessionEvent[A]): SessionEvent[(A, Time)] = {
-//        val value = appTime.timed(SessionEvent.toApp(ev).map(_.head._2))
-//        AppEvent.toSession(value)
-//      }
     }
   }
 
   private[this] def mkTime[T <: Tier: Tier.Concrete]: T#Behavior[Time] =
     Tier.tier[T].Behavior.fromPoll(() => System.currentTimeMillis())
 
-  // FIXME: Delays don't hit in the same tick on the same delay
   private[this] def mkDelay[T <: Tier: Tier.Concrete, A]
     : (T#Event[A], FiniteDuration) => T#Event[A] = (ev, dur) => {
     val tier = Tier.tier[T]

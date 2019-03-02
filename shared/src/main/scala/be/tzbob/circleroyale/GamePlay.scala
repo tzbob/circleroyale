@@ -104,16 +104,14 @@ class GamePlay(started: ClientDBehavior[Boolean])
         (dir, time / 5, action)
       }
 
-    serverTickPlayerInformation
-    // FIXME: all players start at default pos
-      .fold(Player.randomDefault(width, height)) {
-        case (player, (dir, steps, action)) =>
-          player
-            .rotateTo(dir)
-            .step(steps)
-            .clamp(Vec2D.zero, Vec2D(width, height))
-            .copy(attacking = action)
-      }
+    serverTickPlayerInformation.fold(Player.default) {
+      case (player, (dir, steps, action)) =>
+        player
+          .rotateTo(dir)
+          .step(steps)
+          .clamp(Vec2D.zero, Vec2D(width, height))
+          .copy(attacking = action)
+    }
   }
 
   val clientPosition: ClientDBehavior[Vec2D] = {
@@ -220,12 +218,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
   val animationFrame = animationCycle.elapsedTime
 
   val attackingProgress: ClientDBehavior[Time] = {
-    // TODO: FINISH SIMPLIFYING => Continue with adding Line and angle on Weapons
-    //    val timedState =
-    //      Time.time[SessionTier].now.snapshotWith(attackState) { _ -> _ }
-    //    timedState.changes.fold(0L) { case (currentCount, (timeForState, state))
-    //    => }
-
     val startAttacking =
       attackState.changes.dropIf(_ != AttackState.attacking)
     SessionDBehavior.toClient(progressToDeadline(startAttacking, 2.seconds))
