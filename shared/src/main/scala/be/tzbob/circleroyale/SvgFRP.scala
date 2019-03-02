@@ -10,7 +10,11 @@ class SvgFRP(name: String, totalWidth: Int, totalHeight: Int)
   private[this] val mouseSource: ClientEventSource[(Double, Double)] =
     ClientEvent.source[(Double, Double)]
 
-  val mousePosition: ClientEvent[(Double, Double)] = mouseSource
+  val mousePosition: ClientEvent[Vec2D] =
+    (mouseSource: ClientEvent[(Double, Double)])
+      .map {
+        case (x, y) => Vec2D(x, y)
+      }
 
   @client private[this] lazy val svgElement = {
     import org.scalajs.dom
@@ -21,8 +25,8 @@ class SvgFRP(name: String, totalWidth: Int, totalHeight: Int)
 
   @client private[this] lazy val svgPoint = svgElement.createSVGPoint()
 
-  def svg(camera: ClientBehavior[Camera],
-          svgContent: ClientBehavior[Seq[HTML]]): ClientBehavior[HTML] = {
+  def svg(camera: ClientDBehavior[Camera],
+          svgContent: ClientDBehavior[Seq[HTML]]): ClientDBehavior[HTML] = {
 
     svgContent.map2(camera) { (svgElements, cam) =>
       import mtfrp.core.UI.html.all
@@ -30,7 +34,7 @@ class SvgFRP(name: String, totalWidth: Int, totalHeight: Int)
       import mtfrp.core.UI.html.svgTags
       import mtfrp.core.UI.html.svgAttrs
 
-      logger.debug(s"camera used: ${cam.viewboxText}")
+//      logger.debug(s"camera used: ${cam.viewboxText}")
 
       val svgField = svgTags.svg(
         xmlns := "http://www.w3.org/2000/svg",

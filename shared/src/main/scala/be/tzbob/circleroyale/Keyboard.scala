@@ -33,7 +33,7 @@ class Keyboard {
     val down = keyDown.dropIf(_ != key).map(_ => true)
     val up   = keyUp.dropIf(_ != key).map(_ => false)
 
-    down.unionLeft(up).hold(false).toDBehavior
+    down.unionLeft(up).hold(false)
   }
 }
 

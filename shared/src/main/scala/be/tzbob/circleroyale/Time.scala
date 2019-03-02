@@ -9,7 +9,6 @@ import scala.concurrent.duration.FiniteDuration
 
 object Time {
   implicit private[this] val timer = IO.timer(ExecutionContext.global)
-  import cats.syntax.all._
 
   type Time = Long
 
@@ -28,12 +27,17 @@ object Time {
         val df = mkDelay[SessionTier, A]
         df(ev, duration)
       }
+//      def timed[A](ev: SessionEvent[A]): SessionEvent[(A, Time)] = {
+//        val value = appTime.timed(SessionEvent.toApp(ev).map(_.head._2))
+//        AppEvent.toSession(value)
+//      }
     }
   }
 
   private[this] def mkTime[T <: Tier: Tier.Concrete]: T#Behavior[Time] =
     Tier.tier[T].Behavior.fromPoll(() => System.currentTimeMillis())
 
+  // FIXME: Delays don't hit in the same tick on the same delay
   private[this] def mkDelay[T <: Tier: Tier.Concrete, A]
     : (T#Event[A], FiniteDuration) => T#Event[A] = (ev, dur) => {
     val tier = Tier.tier[T]
@@ -46,11 +50,28 @@ object Time {
 
   private[this] def mkHasTime[T <: Tier: Tier.Concrete]: HasTime[T] =
     new HasTime[T] {
+      val tier = Tier.tier[T]
+
       val now: T#Behavior[Time] = mkTime[T]
       def delay[A](ev: T#Event[A], duration: FiniteDuration): T#Event[A] = {
         val df = mkDelay[T, A]
         df(ev, duration)
       }
+//      def timed[A](ev: T#Event[A]): T#Event[(A, Time)] = {
+//        val snappedTime: T#Event[(Time, A)] =
+//          tier.Behavior.mtfrpBehaviorInstances.snapshotWith(now, ev) { (_, _) }
+//
+//        import tier.Event._
+//
+//        snappedTime
+//          .fold(null.asInstanceOf[A] -> 0L -> 0L) {
+//            case (((_, _), tfull), (t, a)) =>
+//              ((a, (t - tfull)), t)
+//          }
+//          .changes
+//          .asInstanceOf[T#Event[((A, Time), Time)]]
+//          .map { case (r, _) => r }
+//      }
     }
 
   def time[T <: Tier: HasTime]: HasTime[T] = implicitly[HasTime[T]]

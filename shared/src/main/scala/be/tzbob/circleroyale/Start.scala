@@ -14,7 +14,6 @@ class Start extends GameScene {
       .fold(false) { (_, _) =>
         true
       }
-      .toDBehavior
 
   val ui: ClientDBehavior[HTML] = ClientDBehavior.constant {
     div(

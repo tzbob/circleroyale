@@ -5,11 +5,13 @@ import hokko.core.Engine
 import mtfrp.core._
 import mtfrp.core.macros.client
 
-class IntervalCycle(interval: Int) {
+import scala.concurrent.duration.FiniteDuration
+
+class IntervalCycle(interval: FiniteDuration) {
 
   private[this] var stopToken = 0
 
-  private[this] val rawAnimationFrame: ClientEventSource[Unit] =
+  private[this] val rawInterval: ClientEventSource[Unit] =
     ClientEvent.sourceWithEngineEffect[Unit] { (fire: Unit => Unit) =>
       println(s"executing effects")
       startInterval(fire)
@@ -18,9 +20,8 @@ class IntervalCycle(interval: Int) {
   val clock: ClientDBehavior[Time] = Time
     .time[ClientTier]
     .now
-    .sampledBy(rawAnimationFrame: ClientEvent[_])
-    .hold(0)
-    .toDBehavior
+    .sampledBy(rawInterval: ClientEvent[_])
+    .hold(System.currentTimeMillis())
 
   val elapsedTime: ClientEvent[Time] =
     ClientDBehavior
@@ -32,10 +33,10 @@ class IntervalCycle(interval: Int) {
 
   @client private[this] val startInterval = (fire: Unit => Unit) => {
     import org.scalajs.dom
-    println(s"Starting interval for $interval ms")
+    println(s"Starting interval for ${interval.toMillis} ms")
     stopToken = org.scalajs.dom.window.setInterval(() => {
       fire(())
-    }, interval)
+    }, interval.toMillis)
   }
 
   @client private[this] val stopInterval = () => {

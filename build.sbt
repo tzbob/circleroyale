@@ -10,11 +10,12 @@ scalacOptions in ThisBuild ++= Seq(
   "UTF-8",
   "-feature",
   "-deprecation",
-  "-Xlint",
+  // "-Xlint",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
   "-Xfuture",
+  "-Ypartial-unification",
   "-language:higherKinds",
   "-language:implicitConversions"
 )
@@ -30,16 +31,19 @@ lazy val example = crossProject
       "org.scalamacros"                % "paradise"        % "2.1.0" cross CrossVersion.full),
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.8"),
     libraryDependencies ++= Seq(
-      "be.tzbob"      %%% "hokko"     % "0.4.9-SNAPSHOT",
-      "be.tzbob"      %%% "kooi"      % "0.3.9-SNAPSHOT",
-      "org.scalatest" %%% "scalatest" % "3.0.5" % "test",
+      "be.tzbob"      %%% "gavial"      % "0.4.0-SNAPSHOT",
+      "org.scalatest" %%% "scalatest"   % "3.0.5" % "test",
       "org.typelevel" %%% "cats-effect" % "1.0.0"
     ),
     useYarn := true,
     scalaJSUseMainModuleInitializer := true,
     emitSourceMaps := true,
     webpackBundlingMode := BundlingMode.LibraryOnly(),
-    mainClass in Compile := Some("be.tzbob.circleroyale.CircleRoyale")
+    //mainClass in Compile := Some("be.tzbob.circleroyale._1Client")
+//      mainClass in Compile := Some("be.tzbob.circleroyale._3SessionServerTick")
+//    mainClass in Compile := Some("be.tzbob.circleroyale._4App")
+            mainClass in Compile := Some("be.tzbob.circleroyale._5Chat")
+//      mainClass in Compile := Some("be.tzbob.circleroyale.CircleRoyale")
 //      mainClass in Compile := Some("be.tzbob.examples.Counters")
   )
   .jvmSettings(

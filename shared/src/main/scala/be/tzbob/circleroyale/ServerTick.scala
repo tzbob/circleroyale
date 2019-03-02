@@ -5,8 +5,9 @@ import java.util.concurrent.{Executors, TimeUnit}
 import be.tzbob.circleroyale.Time.Time
 import mtfrp.core._
 import mtfrp.core.macros.server
+import scala.concurrent.duration.FiniteDuration
 
-class ServerTick(interval: Int) {
+class ServerTick(interval: FiniteDuration) {
   @server private[this] val ex = Executors.newSingleThreadScheduledExecutor()
 
   private[this] val rawServerTick: AppEventSource[Unit] =
@@ -16,7 +17,7 @@ class ServerTick(interval: Int) {
           fire(())
         },
         0,
-        interval,
+        interval.toMillis,
         TimeUnit.MILLISECONDS
       )
     }
@@ -26,7 +27,6 @@ class ServerTick(interval: Int) {
     .now
     .sampledBy(rawServerTick: AppEvent[_])
     .hold(0)
-    .toDBehavior
 
   val elapsedTime: AppEvent[Time] = AppDBehavior
     .delayed(clock)
@@ -34,4 +34,6 @@ class ServerTick(interval: Int) {
       currentTime - prevTime
     }
     .changes
+
+  val sessionElapsedTime: SessionEvent[Time] = AppEvent.toSession(elapsedTime)
 }

@@ -7,14 +7,14 @@ class Counters extends ExampleMain {
 
   val in = ClientEvent.source[Int]
 
-  val clientSum = in.fold(0)(_ + _).toDBehavior
+  val clientSum = in.fold(0)(_ + _)
 
   val sessionIn: SessionEvent[Int] = ClientEvent.toSession(in)
 
-  val sessionSum = sessionIn.fold(0)(_ + _).toDBehavior
+  val sessionSum = sessionIn.fold(0)(_ + _)
 
   val appSum =
-    SessionEvent.toApp(sessionIn).fold(0)(_ + _.values.sum).toDBehavior
+    SessionEvent.toApp(sessionIn).fold(0)(_ + _.values.sum)
 
   val ui: ClientDBehavior[HTML] =
     (clientSum, SessionDBehavior.toClient(sessionSum).map { ss =>

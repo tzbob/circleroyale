@@ -75,7 +75,7 @@ class IndexPage extends Page with LazyLogging {
       .unionLeft(persistedProject.map(Vector(_)))
 
   val projects: AppIBehavior[Seq[Project], Vector[Project]] =
-    persistedProjects.fold(Seq.empty[Project]) { _ ++ _ }
+    persistedProjects.foldI(Seq.empty[Project]) { _ ++ _ }
 
   val broadcastedProjects: ClientDBehavior[Seq[Project]] = {
     val sessionProjects = AppIBehavior.toSession(projects)
@@ -108,7 +108,6 @@ class IndexPage extends Page with LazyLogging {
       else ""
     }
     .hold("")
-    .toDBehavior
 
   val scene =
     new Scene(ClientDBehavior.constant(h1("Projects")), interface, warnings)

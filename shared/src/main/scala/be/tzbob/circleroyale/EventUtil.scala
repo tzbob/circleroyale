@@ -3,11 +3,11 @@ import hokko.core.tc.{Event, Snapshottable}
 
 object EventUtil {
 
-  def removeDoublesBy[Ev[_], IBeh[_, _], A](eq: (A, A) => Boolean,
-                                            event: Ev[A])(
+  def removeDoublesBy[Ev[_], Beh[_], IBeh[_, _], A](eq: (A, A) => Boolean,
+                                                    event: Ev[A])(
       implicit
-      ev: Event[Ev, IBeh],
-      snapshottable: Snapshottable[IBeh[?, A], Ev]): Ev[A] = {
+      ev: Event[Ev, Beh, IBeh],
+      snapshottable: Snapshottable[Beh, Ev]): Ev[A] = {
 
     val folded = ev.fold(event, Option.empty[A] -> Option.empty[A]) {
       (acc, n) =>
@@ -24,9 +24,9 @@ object EventUtil {
     ev.collect(ev.map(result)(_._2))(identity)
   }
 
-  def removeDoubles[Ev[_], IBeh[_, _], A](event: Ev[A])(
+  def removeDoubles[Ev[_], Beh[_], IBeh[_, _], A](event: Ev[A])(
       implicit
-      ev: Event[Ev, IBeh],
-      snapshottable: Snapshottable[IBeh[?, A], Ev]): Ev[A] =
+      ev: Event[Ev, Beh, IBeh],
+      snapshottable: Snapshottable[Beh, Ev]): Ev[A] =
     removeDoublesBy(_ == _, event)
 }

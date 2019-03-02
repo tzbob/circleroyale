@@ -18,7 +18,7 @@ class GamePlay(started: ClientDBehavior[Boolean])
   val svgFRP = new SvgFRP("playground", width, height)
 
   val sessionInput: SessionDBehavior[Input] = {
-    val mousePosition    = svgFRP.mousePosition.map { case (x, y) => Vec2D(x, y) }
+    val mousePosition    = svgFRP.mousePosition
     val previousPosition = ClientDBehavior.delayed(clientPosition)
 
     val newDirection =
@@ -26,7 +26,7 @@ class GamePlay(started: ClientDBehavior[Boolean])
         val reversePos = prevPos * -1
         absoluteMouse.move(reversePos).normalize
       }
-    val direction = newDirection.hold(Vec2D.zero).toDBehavior
+    val direction = newDirection.hold(Vec2D.zero)
 
     val kb       = new Keyboard
     val spacebar = kb.isKeyDown(" ")
@@ -37,7 +37,7 @@ class GamePlay(started: ClientDBehavior[Boolean])
       else None
     }
 
-    val pushToServerCycle = new IntervalCycle(1000 / 60)
+    val pushToServerCycle = new IntervalCycle(1.second / 10)
     val pushToServerTime  = pushToServerCycle.elapsedTime
     val inputToServer = inputIfStarted
       .sampledBy(pushToServerTime)
@@ -47,10 +47,9 @@ class GamePlay(started: ClientDBehavior[Boolean])
       .toSession(inputToServer)
       .map(_.normalize)
       .hold(Input(Vec2D.zero, false))
-      .toDBehavior
   }
 
-  val serverTick = new ServerTick(1000 / 60)
+  val serverTick = new ServerTick(1.second / 60)
   val elapsed    = AppEvent.toSession(serverTick.elapsedTime)
 
   def progressToDeadline(start: SessionEvent[_],
@@ -68,7 +67,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
       .fold(0L) { (acc, f) =>
         f(acc)
       }
-      .toDBehavior
   }
 
   val attackState: SessionDBehavior[AttackState] = {
@@ -91,7 +89,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
       .unionRight(cool)
       .unionRight(available)
       .hold(AttackState.available)
-      .toDBehavior
   }
 
   val sessionPlayer: SessionDBehavior[Player] = {
@@ -117,7 +114,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
             .clamp(Vec2D.zero, Vec2D(width, height))
             .copy(attacking = action)
       }
-      .toDBehavior
   }
 
   val clientPosition: ClientDBehavior[Vec2D] = {
@@ -125,13 +121,13 @@ class GamePlay(started: ClientDBehavior[Boolean])
     clientPlayer.map(_.position)
   }
 
-  val camera: ClientBehavior[Camera] = clientPosition.map { p =>
+  val camera: ClientDBehavior[Camera] = clientPosition.map { p =>
     val cameraWidth  = 600.0
     val cameraHeight = 400.0
     Camera(p - Vec2D(cameraWidth / 2, cameraHeight / 2),
            cameraWidth,
            cameraHeight)
-  }.toBehavior
+  }
 
   val sessionStarted = ClientDBehavior.toSession(started)
 
@@ -160,7 +156,7 @@ class GamePlay(started: ClientDBehavior[Boolean])
         if (playerMap.size >= 2) {
           val pairs = playerMap.keys.toList.combinations(2)
           def clientIntersect(c1: Client, c2: Client) =
-            playerMap(c1).hits(playerMap(c2), directionMap(c1))
+            playerMap(c1).hits(playerMap(c2))
 
           val attackedPlayers = pairs.map {
             case List(c1, c2) if clientIntersect(c1, c2) =>
@@ -185,7 +181,7 @@ class GamePlay(started: ClientDBehavior[Boolean])
       .changes
 
     // once dead, always dead
-    dead.fold(false)((acc, n) => if (acc) acc else n).toDBehavior
+    dead.fold(false)((acc, n) => if (acc) acc else n)
   }
 
   val _ = sessionStarted
@@ -195,7 +191,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
       case (count, (dead, time)) =>
         if (dead) count else count + time
     }
-    .toDBehavior
 
   val timeSpentAlive: SessionDBehavior[Time] = {
     val startTime = Time
@@ -212,7 +207,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
       .fold(0L) { (acc, n) =>
         n - acc
       }
-      .toDBehavior
   }
 
   val clientPlayers = SessionDBehavior.toClient(
@@ -220,7 +214,7 @@ class GamePlay(started: ClientDBehavior[Boolean])
   val svgContent = clientPlayers.map { players =>
     logger.debug(s"players $players")
     players.toSeq.map(_.svg)
-  }.toBehavior
+  }
 
   val animationCycle = new AnimationCycle
   val animationFrame = animationCycle.elapsedTime
@@ -241,7 +235,6 @@ class GamePlay(started: ClientDBehavior[Boolean])
     .svg(camera, svgContent)
     .sampledBy(animationFrame)
     .hold(UI.html.all.div())
-    .toDBehavior
     .map2(attackingProgress) { (game, progress) =>
       import UI.html.all._
 
