@@ -1,5 +1,5 @@
-//resolvers in ThisBuild += "Sonatype OSS Snapshots" at
-//  "https://oss.sonatype.org/content/repositories/snapshots"
+resolvers in ThisBuild += "Sonatype OSS Snapshots" at
+  "https://oss.sonatype.org/content/repositories/snapshots"
 
 organization in ThisBuild := "be.tzbob"
 scalaVersion in ThisBuild := "2.12.4"
@@ -24,7 +24,7 @@ lazy val example = crossProject
   .in(file("."))
   .enablePlugins(BuildInfoPlugin)
   .settings(
-    name := "kooi-examples",
+    name := "gavial-examples",
     buildInfoKeys := Seq[BuildInfoKey](name),
     buildInfoPackage := "be.tzbob.examples",
     addCompilerPlugin(
@@ -32,19 +32,16 @@ lazy val example = crossProject
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.8"),
     libraryDependencies ++= Seq(
       "be.tzbob"      %%% "gavial"      % "0.4.0-SNAPSHOT",
-      "org.scalatest" %%% "scalatest"   % "3.0.5" % "test",
-      "org.typelevel" %%% "cats-effect" % "1.0.0"
+      "org.scalatest" %%% "scalatest"   % "3.0.5" % "test"
     ),
-    useYarn := true,
     scalaJSUseMainModuleInitializer := true,
     emitSourceMaps := true,
     webpackBundlingMode := BundlingMode.LibraryOnly(),
-    //mainClass in Compile := Some("be.tzbob.circleroyale._1Client")
-//      mainClass in Compile := Some("be.tzbob.circleroyale._3SessionServerTick")
-//    mainClass in Compile := Some("be.tzbob.circleroyale._4App")
-            mainClass in Compile := Some("be.tzbob.circleroyale._5Chat")
-//      mainClass in Compile := Some("be.tzbob.circleroyale.CircleRoyale")
-//      mainClass in Compile := Some("be.tzbob.examples.Counters")
+//    mainClass in Compile := Some("be.tzbob.examples._1Client"),
+//    mainClass in Compile := Some("be.tzbob.examples._2SessionServerTick"),
+//    mainClass in Compile := Some("be.tzbob.examples._3App"),
+    mainClass in Compile := Some("be.tzbob.examples._4Chat"),
+//    mainClass in Compile := Some("be.tzbob.circleroyale.CircleRoyale"),
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
