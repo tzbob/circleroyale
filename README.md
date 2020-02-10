@@ -1,7 +1,9 @@
 # Gavial Examples
 
 To give the reader a better overview of the examples in the paper we also packaged them here.
-This project contains the paper-example of CircleRoyale as well as the current state of the CircleRoyale application .
+This project contains the paper-example of CircleRoyale as well as the current state of the CircleRoyale application.
+
+To run the examples go into the cloned repository and execute ```sbt run```. Sbt will download all dependencies and run the examples. The default example (set in ```build.sbt```) is `_4Chat.scala`.
 
 The layout is as follows:
 
